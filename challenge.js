@@ -17,7 +17,7 @@ async function fetchWeather() {
         const data = await response.json();
         // console.log(data);
         // 1. the output of data is like
-        // {
+        // { 
         //     latitude: 27.75,
         //     longitude: 85.375,
         //     generationtime_ms: 0.10383129119873047,
@@ -93,8 +93,16 @@ async function fetchWeather() {
 
         //3. Then return the data array
 
-        // return dataArray;
+        const dataArray = {
+            time: data.daily.time,
+            temperature_2m_max: data.daily.temperature_2m_max,
+            temperature_2m_min: data.daily.temperature_2m_min,
+            rain_sum: data.daily.rain_sum,
+            snowfall_sum: data.daily.snowfall_sum,
+            windspeed_10m_max: data.daily.windspeed_10m_max
+        };
 
+        return dataArray;
 
     } catch (error) {
         console.error("Error fetching weather data:", error);
@@ -132,12 +140,19 @@ async function generateWeeklySummary() {
         // Note: Hint use Data Object
         // new Date(dateString);
         // and convert to localDateString
+
+        return new Date(dateString).toLocaleDateString("en-US", { weekday: "long" });
     }
 
     function getWeatherCondition(rain, snowfall, windspeed) {
         // Pseudocode
         // 1. check if rainy > 0 assign "rainy", snowfall > 0 assign "snowy", windspeed> 15 assign "windy" else assign "sunny"
         // 2. return the assign 
+
+        if (rain > 0) return "Rainy";
+        if (snowfall > 0) return "Snowy";
+        if (windspeed > 15) return "Windy";
+        return "Sunny";
     }
 
     console.log(
@@ -145,23 +160,22 @@ async function generateWeeklySummary() {
             .map((date, index) => {
 
                 // 1. Assign Days to Date call getWeekDay()
-                // 2. get Max Temp like 18°C and min Temp 8°C
-                    // data are inside 
-                    // temperature_2m_max: [18.4, 18.7, 18, 17.3, 16.9, 16.7, 18.7],
-                    // temperature_2m_min: [7.5, 9.2, 8.6, 8.3, 7.6, 7.5, 8],
-                // 3. get condition (if it sunny/windy/snowy) call getWeatherCondition
-                // 4. return the response is this form `${day}: ${Math.round(maxTemp)}°C / ${Math.round(minTemp)}°C (${condition})`;
-               
-                // The return output code should be in this form
-                // 'Wednesday: 18°C / 8°C (Sunny)',
-                // 'Thursday: 19°C / 9°C (Sunny)',
-                // 'Friday: 18°C / 9°C (Sunny)',
-                // 'Saturday: 17°C / 8°C (Sunny)',
-                // 'Sunday: 17°C / 8°C (Sunny)',
-                // 'Monday: 17°C / 8°C (Sunny)',
-                // 'Tuesday: 19°C / 8°C (Sunny)'
-            })
+                const day = getWeekday(date);
 
+                // 2. get Max Temp like 18°C and min Temp 8°C
+                const maxTemp = dailyData.temperature_2m_max[index];
+                const minTemp = dailyData.temperature_2m_min[index];
+
+                // 3. get condition (if it sunny/windy/snowy) call getWeatherCondition
+                const condition = getWeatherCondition(
+                    dailyData.rain_sum[index],
+                    dailyData.snowfall_sum[index],
+                    dailyData.windspeed_10m_max[index]
+                );
+
+                // 4. return the response is this form `${day}: ${Math.round(maxTemp)}°C / ${Math.round(minTemp)}°C (${condition})`;
+                return `${day}: ${Math.round(maxTemp)}°C / ${Math.round(minTemp)}°C (${condition})`;
+            })
     );
 }
 
